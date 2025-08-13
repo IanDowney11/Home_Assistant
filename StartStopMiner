@@ -10,7 +10,7 @@ async def StartMiner_Low():
     """Start the Antminer In Low Power Mode"""
     log.info("async def StartMiner_Low(): Starting")
 
-    url = "http://192.168.8.192/cgi-bin/set_miner_conf.cgi"
+    url = "http://xxx.xxx.xxx.xxx/cgi-bin/set_miner_conf.cgi"
     #0 = normal, 1 = sleep, 3 = low power
     payload = {"miner-mode": "3"}
     username = "root"
@@ -43,7 +43,7 @@ async def StartMiner_Low():
 async def StopMiner():
     """Stop the Antminer"""
     log.info("Stopping the Antminer")
-    url = "http://192.168.8.192/cgi-bin/set_miner_conf.cgi"
+    url = "http://xxx.xxx.xxx.xxx/cgi-bin/set_miner_conf.cgi"
     #0 = normal, 1 = sleep, 3 = low power
     payload = {"miner-mode": "1"}
     username = "root"
