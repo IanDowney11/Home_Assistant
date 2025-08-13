@@ -14,7 +14,7 @@ async def StartMiner_Low():
     #0 = normal, 1 = sleep, 3 = low power
     payload = {"miner-mode": "3"}
     username = "root"
-    password = "4CEF9CEF2A395DF93EE093FA80405A34"
+    password = ""
     confPayload = json.dumps(payload)
 
     #turn the loading spinner on
