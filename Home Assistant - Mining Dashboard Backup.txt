@@ -1,0 +1,344 @@
+views:
+  - title: Home
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Solar and Energy
+            heading_style: title
+          - type: gauge
+            entity: sensor.solaredge_i1_m1_ac_power
+            name: Power Usage
+            max: 10
+            needle: true
+            unit: kWh
+            segments:
+              - from: -10
+                color: '#ffa600'
+              - from: -3
+                color: '#43a047'
+              - from: 0
+                color: '#db4437'
+            severity:
+              green: -10
+              yellow: 0
+              red: 10
+            min: -10
+          - type: gauge
+            entity: sensor.solaredge_i1_dc_power
+            name: Current Generation
+            unit: W
+            min: 0
+            max: 10000
+            needle: true
+            severity:
+              green: 5000
+              yellow: 2000
+              red: 0
+        column_span: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Controls
+            heading_style: title
+          - show_name: true
+            show_icon: true
+            type: button
+            name: Turn Miner On Low
+            icon: mdi:connection
+            tap_action:
+              action: call-service
+              service: pyscript.startminer_low
+            show_state: true
+          - show_name: true
+            show_icon: true
+            type: button
+            name: Stop Miner
+            icon: mdi:alert-octagon-outline
+            tap_action:
+              action: call-service
+              service: pyscript.stopminer
+            show_state: true
+          - show_name: true
+            show_icon: true
+            type: button
+            name: Refresh Stats
+            icon: mdi:refresh
+            tap_action:
+              action: call-service
+              service: pyscript.minerstats
+            show_state: true
+          - type: entity
+            entity: input_boolean.miner_running
+            visibility:
+              - condition: numeric_state
+                entity: ''
+        column_span: 2
+      - type: grid
+        cards:
+          - show_state: false
+            show_name: false
+            camera_view: auto
+            fit_mode: cover
+            type: picture-entity
+            entity: input_boolean.show_spinner
+            image: >-
+              https://cdn.dribbble.com/userupload/20680844/file/original-a5a6bbdebdd0c283b9e2dae1408882bd.gif
+            grid_options:
+              columns: 3
+              rows: auto
+            tap_action:
+              action: none
+            visibility:
+              - condition: state
+                entity: input_boolean.show_spinner
+                state: 'on'
+        visibility:
+          - condition: state
+            entity: input_boolean.show_spinner
+            state: 'on'
+      - type: grid
+        cards:
+          - type: heading
+            heading: Hashrate
+            heading_style: title
+          - type: gauge
+            entity: sensor.miner_rate_5s
+            name: Last 5 Seconds
+            min: 0
+            max: 105000
+            needle: true
+            severity:
+              green: 70000
+              yellow: 0
+              red: 100000
+            unit: Th/s
+          - type: gauge
+            entity: sensor.miner_rate_30m
+            unit: Th/s
+            name: Last 30 Minutes
+            min: 0
+            max: 105000
+            needle: true
+            severity:
+              green: 70000
+              yellow: 0
+              red: 100000
+          - type: gauge
+            entity: sensor.miner_rate_avg
+            unit: Th/s
+            name: Average Hashrate
+            min: 0
+            max: 105000
+            needle: true
+            severity:
+              green: 70000
+              yellow: 0
+              red: 100000
+        column_span: 4
+        visibility:
+          - condition: state
+            entity: sensor.miner_mode
+            state_not: Sleep
+      - type: grid
+        cards:
+          - type: heading
+            heading: Hashboard 1
+            heading_style: title
+            icon: mdi:chip
+          - type: gauge
+            entity: sensor.hashboard_1_inlet_temp
+            unit: C
+            name: Inlet Temp
+            needle: true
+            severity:
+              green: 20
+              yellow: 0
+              red: 80
+          - type: gauge
+            entity: sensor.hashboard_1_outlet_temp
+            unit: C
+            name: Outlet Temp
+            needle: true
+            severity:
+              green: 20
+              yellow: 0
+              red: 80
+        column_span: 2
+        visibility:
+          - condition: state
+            entity: sensor.miner_mode
+            state_not: Sleep
+      - type: grid
+        cards:
+          - type: heading
+            heading: Hashboard 2
+            heading_style: title
+            icon: mdi:chip
+          - type: gauge
+            entity: sensor.hashboard_2_inlet_temp
+            unit: C
+            name: Inlet Temp
+            needle: true
+            severity:
+              green: 20
+              yellow: 0
+              red: 80
+          - type: gauge
+            entity: sensor.hashboard_2_outlet_temp
+            unit: C
+            name: Inlet Temp
+            needle: true
+            severity:
+              green: 20
+              yellow: 0
+              red: 80
+        column_span: 2
+        visibility:
+          - condition: state
+            entity: sensor.miner_mode
+            state_not: Sleep
+      - type: grid
+        cards:
+          - type: heading
+            heading: Hashboard 3
+            heading_style: title
+            icon: mdi:chip
+          - type: gauge
+            entity: sensor.hashboard_3_inlet_temp
+            unit: C
+            name: Inlet Temp
+            needle: true
+            severity:
+              green: 20
+              yellow: 0
+              red: 80
+          - type: gauge
+            entity: sensor.hashboard_3_outlet_temp
+            unit: C
+            name: Inlet Temp
+            needle: true
+            severity:
+              green: 20
+              yellow: 0
+              red: 80
+        column_span: 4
+        visibility:
+          - condition: state
+            entity: sensor.miner_mode
+            state_not: Sleep
+      - type: grid
+        cards:
+          - type: heading
+            heading: Status
+            heading_style: title
+          - type: entities
+            entities:
+              - entity: sensor.miner_mode
+              - entity: sensor.miner_elapsed
+                name: Up Time
+                icon: mdi:clock-time-eight
+              - entity: sensor.miner_rate_5s
+                name: 'Rate Last 5 Seconds '
+                icon: mdi:speedometer
+              - entity: sensor.miner_rate_30m
+                name: Rate Last 30 Mins
+                icon: mdi:speedometer-medium
+              - entity: sensor.miner_rate_avg
+              - entity: sensor.miner_fan_1
+              - entity: sensor.miner_fan_2
+              - entity: sensor.miner_fan_3
+              - entity: sensor.miner_fan_4
+              - entity: sensor.hashboard_1_inlet_temp
+              - entity: sensor.hashboard_1_outlet_temp
+              - entity: sensor.hashboard_2_inlet_temp
+              - entity: sensor.hashboard_2_outlet_temp
+              - entity: sensor.hashboard_3_inlet_temp
+              - entity: sensor.hashboard_3_outlet_temp
+              - entity: sensor.hashboard_1_hashrate_ideal
+              - entity: sensor.hashboard_1_hashrate_real
+              - entity: sensor.hashboard_2_hashrate_ideal
+              - entity: sensor.hashboard_2_hashrate_real
+              - entity: sensor.hashboard_3_hashrate_ideal
+              - entity: sensor.hashboard_3_hashrate_real
+            title: Miner Status
+            visibility:
+              - condition: state
+                entity: sensor.miner_mode
+                state_not: Sleep
+          - type: tile
+            features_position: bottom
+            vertical: false
+            entity: sensor.miner_mode
+            icon: mdi:bed-clock
+            visibility:
+              - condition: state
+                entity: sensor.miner_mode
+                state: Sleep
+            name: Miner Is currently asleep
+            hide_state: true
+            grid_options:
+              columns: 12
+              rows: 1
+    header:
+      card:
+        type: markdown
+        content: >-
+          Dashboard to show the status of power usage in the home  and give
+          access to turn the Miner on and Off
+        title: Solar Based Bitcoin Mining Controls
+      layout: responsive
+      badges_position: bottom
+      badges_wrap: wrap
+    cards:
+      - type: entities
+        entities:
+          - entity: switch.moneyprinter_active
+            name: Active
+        title: MoneyPrinter
+      - type: entities
+        entities:
+          - entity: number.moneyprinter_power_limit
+            name: Power Limit
+        title: MoneyPrinter
+      - type: entities
+        entities:
+          - entity: sensor.moneyprinter_board_0_board_hashrate
+            name: 'Board #0 Board Hashrate'
+          - entity: sensor.moneyprinter_board_0_board_temperature
+            name: 'Board #0 Board Temperature'
+          - entity: sensor.moneyprinter_board_0_chip_temperature
+            name: 'Board #0 Chip Temperature'
+          - entity: sensor.moneyprinter_board_1_board_hashrate
+            name: 'Board #1 Board Hashrate'
+          - entity: sensor.moneyprinter_board_1_board_temperature
+            name: 'Board #1 Board Temperature'
+          - entity: sensor.moneyprinter_board_1_chip_temperature
+            name: 'Board #1 Chip Temperature'
+          - entity: sensor.moneyprinter_board_2_board_hashrate
+            name: 'Board #2 Board Hashrate'
+          - entity: sensor.moneyprinter_board_2_board_temperature
+            name: 'Board #2 Board Temperature'
+          - entity: sensor.moneyprinter_board_2_chip_temperature
+            name: 'Board #2 Chip Temperature'
+          - entity: sensor.moneyprinter_efficiency
+            name: Efficiency
+          - entity: sensor.moneyprinter_fan_0_fan_speed
+            name: 'Fan #0 Fan Speed'
+          - entity: sensor.moneyprinter_fan_1_fan_speed
+            name: 'Fan #1 Fan Speed'
+          - entity: sensor.moneyprinter_fan_2_fan_speed
+            name: 'Fan #2 Fan Speed'
+          - entity: sensor.moneyprinter_fan_3_fan_speed
+            name: 'Fan #3 Fan Speed'
+          - entity: sensor.moneyprinter_hashrate
+            name: Hashrate
+          - entity: sensor.moneyprinter_ideal_hashrate
+            name: Ideal Hashrate
+          - entity: sensor.moneyprinter_miner_consumption
+            name: Miner Consumption
+          - entity: sensor.moneyprinter_power_limit
+            name: Power Limit
+          - entity: sensor.moneyprinter_temperature
+            name: Temperature
+        title: MoneyPrinter
