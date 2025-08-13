@@ -1,0 +1,82 @@
+import sys,requests
+from requests.auth import HTTPDigestAuth
+import json
+from functools import partial
+import socket
+
+@service
+async def MinerStats():
+    """Get the Current Miner Stats V17"""
+    log.info("Getting the Current Miner Stats")
+    url = "http://192.168.8.192/cgi-bin/stats.cgi"
+    username = "root"
+    password = ""
+
+    try:
+
+        result = await hass.async_add_executor_job(
+            partial(requests.post, url, auth=HTTPDigestAuth(username, password), timeout=10)
+        )
+        if result.status_code == 200:
+            log.info("Got Stats (200)")
+            try:
+                data = result.json()  # returns Python dict/list
+                #log.info("JSON pretty:\n%s", json.dumps(data, indent=2))
+                #hass.states.async_set('sensor.miner_stats', json.dumps(data))
+                stats_list = data.get('STATS', [])
+                if stats_list:
+                    stats = stats_list[0]
+
+                    hass.states.async_set('sensor.miner_elapsed', stats.get('elapsed', 0))
+                    hass.states.async_set('sensor.miner_rate_5s', stats.get('rate_5s', 0))
+                    hass.states.async_set('sensor.miner_rate_30m', stats.get('rate_30m', 0))
+                    hass.states.async_set('sensor.miner_rate_avg', stats.get('rate_avg', 0))
+
+                    fans = stats['fan']
+                    # Loop through each fan value and set a sensor
+                    for i, fan_value in enumerate(fans, start=1):
+                        sensor_id = f'sensor.miner_fan_{i}'
+                        hass.states.async_set(sensor_id, fan_value)
+
+                    # Define a mapping of mode values to descriptive words
+                    mode_mapping = {
+                        0: 'Normal',
+                        1: 'Sleep',
+                        3: 'Low Power'
+                    }
+                    # Get the mode value
+                    mode_value = stats.get('miner-mode', 0)
+                    # Map to descriptive word, defaulting to 'Unknown' if not found
+                    mode_word = mode_mapping.get(mode_value, 'Unknown')
+                    # Set the sensor with the descriptive word
+                    hass.states.async_set('sensor.miner_mode', mode_word)
+
+                    chains = stats['chain']
+                    for i, chain in enumerate(chains, start=1):
+                        temp_chip = chain['temp_chip']
+                        rate_ideal = chain['rate_ideal']
+                        rate_real = chain['rate_real']
+
+                        if len(temp_chip) >= 3:
+                            inlet_temp = temp_chip[0]   # first number
+                            outlet_temp = temp_chip[2]  # third number
+
+                            # Set sensors for each chain
+                            hass.states.async_set(f'sensor.hashboard_{i}_inlet_temp', inlet_temp)
+                            hass.states.async_set(f'sensor.hashboard_{i}_outlet_temp', outlet_temp)
+
+                            hass.states.async_set(f'sensor.hashboard_{i}_hashrate_ideal', rate_ideal)
+                            hass.states.async_set(f'sensor.hashboard_{i}_hashrate_real', rate_real)                
+                else:
+                    #should set all values to default / off
+                    log.info("Miner not switched on")
+                    hass.states.async_set('sensor.miner_mode', "Sleep")
+
+            except (ValueError, json.JSONDecodeError):
+                # fallback if response isn't valid JSON or content-type is wrong
+                text = result.text
+                log.info(f"Response not JSON. Raw text: {text}")
+        else:
+            log.info(f"Failed to get stats. Status code: {result.status_code}")
+    except requests.exceptions.RequestException as e:
+        log.info(f"Request failed: {e}")
