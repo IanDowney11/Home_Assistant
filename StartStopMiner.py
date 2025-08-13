@@ -1,0 +1,76 @@
+import sys,requests
+from requests.auth import HTTPDigestAuth
+import json
+from functools import partial
+import socket
+import asyncio
+
+@service
+async def StartMiner_Low():
+    """Start the Antminer In Low Power Mode"""
+    log.info("async def StartMiner_Low(): Starting")
+
+    url = "http://192.168.8.192/cgi-bin/set_miner_conf.cgi"
+    #0 = normal, 1 = sleep, 3 = low power
+    payload = {"miner-mode": "3"}
+    username = "root"
+    password = "4CEF9CEF2A395DF93EE093FA80405A34"
+    confPayload = json.dumps(payload)
+
+    #turn the loading spinner on
+    await hass.services.async_call('input_boolean', 'turn_on', {'entity_id': 'input_boolean.show_spinner'})
+
+    try:
+        result = await hass.async_add_executor_job(
+            partial(requests.post, url, auth=HTTPDigestAuth(username, password), data=confPayload)
+        )
+        #r = requests.post(url, auth=HTTPDigestAuth(username, password), data=confPayload)
+        if result.status_code == 200:
+            log.info("Antminer mode set to low successfully.")
+            # set the miner_running senson for use in automations
+            await hass.services.async_call('input_boolean', 'turn_on', {'entity_id': 'input_boolean.miner_running'})
+            await asyncio.sleep(30) 
+            await hass.services.async_call('pyscript', 'minerstats', {})
+            #turn the loading spinner off
+            await hass.services.async_call('input_boolean', 'turn_off', {'entity_id': 'input_boolean.show_spinner'})
+
+        else:
+            log.info(f"Failed to set mode to low power. Status code: {result.status_code}")
+    except requests.exceptions.RequestException as e:
+        log.info(f"Request failed: {e}")
+
+@service
+async def StopMiner():
+    """Stop the Antminer"""
+    log.info("Stopping the Antminer")
+    url = "http://192.168.8.192/cgi-bin/set_miner_conf.cgi"
+    #0 = normal, 1 = sleep, 3 = low power
+    payload = {"miner-mode": "1"}
+    username = "root"
+    password = "4CEF9CEF2A395DF93EE093FA80405A34"
+
+    confPayload = json.dumps(payload)
+
+    #turn the loading spinner on
+    await hass.services.async_call('input_boolean', 'turn_on', {'entity_id': 'input_boolean.show_spinner'})
+
+    try:
+        result = await hass.async_add_executor_job(
+            partial(requests.post, url, auth=HTTPDigestAuth(username, password), data=confPayload)
+        )
+        #r = requests.post(url, auth=HTTPDigestAuth(username, password), data=confPayload)
+        if result.status_code == 200:
+            log.info("Antminer turned off successfully.")
+            # set the miner_running senson for use in automations
+            await hass.services.async_call('input_boolean', 'turn_off', {'entity_id': 'input_boolean.miner_running'})
+
+            await asyncio.sleep(30)
+            await hass.services.async_call('pyscript', 'minerstats', {})
+
+            #turn the loading spinner off
+            await hass.services.async_call('input_boolean', 'turn_off', {'entity_id': 'input_boolean.show_spinner'})
+
+        else:
+            log.info(f"Failed to turn miner off. Status code: {result.status_code}")
+    except requests.exceptions.RequestException as e:
+        log.info(f"Request failed: {e}")
